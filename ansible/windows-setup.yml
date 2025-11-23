@@ -1,0 +1,26 @@
+---
+- name: Windows Server Management
+  hosts: windows
+  gather_facts: yes
+  tasks:
+    - name: Get system information
+      win_shell: |
+        Get-ComputerInfo | Select-Object WindowsProductName, TotalPhysicalMemory, CsProcessors
+      register: system_info
+
+    - name: Display system info
+      debug:
+        var: system_info.stdout
+
+    - name: Install Chocolatey
+      win_chocolatey:
+        name: chocolatey
+        state: present
+
+    - name: Install basic tools
+      win_chocolatey:
+        name:
+          - git
+          - notepadplusplus
+          - 7zip
+        state: present

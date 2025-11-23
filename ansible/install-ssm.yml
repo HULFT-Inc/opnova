@@ -1,0 +1,30 @@
+---
+- name: Install SSM Agent on Windows instances
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Download SSM Agent
+      win_get_url:
+        url: "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+        dest: "C:\\temp\\AmazonSSMAgentSetup.exe"
+
+    - name: Install SSM Agent silently
+      win_package:
+        path: "C:\\temp\\AmazonSSMAgentSetup.exe"
+        arguments: "/S"
+        state: present
+
+    - name: Start SSM Agent service
+      win_service:
+        name: AmazonSSMAgent
+        state: started
+        start_mode: auto
+
+    - name: Verify SSM Agent status
+      win_service:
+        name: AmazonSSMAgent
+      register: ssm_status
+
+    - name: Display SSM Agent status
+      debug:
+        msg: "SSM Agent is {{ ssm_status.state }}"

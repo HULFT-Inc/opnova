@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Class-Path: resources/ classes/ libs/micronaut-reactor-3.1.0.jar libs/mi
+ cronaut-http-client-4.2.1.jar libs/micronaut-jackson-databind-4.2.1.jar
+  libs/micronaut-websocket-4.2.1.jar libs/micronaut-http-server-netty-4.
+ 2.1.jar libs/micronaut-http-netty-4.2.1.jar libs/micronaut-http-server-
+ 4.2.1.jar libs/micronaut-jackson-core-4.2.1.jar libs/micronaut-json-cor
+ e-4.2.1.jar libs/micronaut-router-4.2.1.jar libs/micronaut-http-4.2.1.j
+ ar libs/micronaut-http-client-core-4.2.1.jar libs/micronaut-discovery-c
+ ore-4.2.1.jar libs/micronaut-context-propagation-4.2.1.jar libs/microna
+ ut-context-4.2.1.jar libs/micronaut-aop-4.2.1.jar libs/micronaut-buffer
+ -netty-4.2.1.jar libs/micronaut-inject-4.2.1.jar libs/logback-classic-1
+ .4.13.jar libs/snakeyaml-2.0.jar libs/jackson-datatype-jdk8-2.15.3.jar 
+ libs/jackson-datatype-jsr310-2.15.3.jar libs/jackson-databind-2.15.3.ja
+ r libs/jackson-annotations-2.15.3.jar libs/jackson-core-2.15.3.jar libs
+ /jakarta.annotation-api-2.1.1.jar libs/netty-handler-proxy-4.1.101.Fina
+ l.jar libs/netty-codec-http2-4.1.101.Final.jar libs/netty-codec-http-4.
+ 1.101.Final.jar libs/netty-codec-socks-4.1.101.Final.jar libs/netty-han
+ dler-4.1.101.Final.jar libs/netty-codec-4.1.101.Final.jar libs/netty-tr
+ ansport-native-unix-common-4.1.101.Final.jar libs/netty-transport-4.1.1
+ 01.Final.jar libs/netty-buffer-4.1.101.Final.jar libs/reactor-core-3.5.
+ 11.jar libs/micronaut-core-reactive-4.2.1.jar libs/reactive-streams-1.0
+ .4.jar libs/micronaut-core-4.2.1.jar libs/logback-core-1.4.13.jar libs/
+ slf4j-api-2.0.9.jar libs/netty-resolver-4.1.101.Final.jar libs/netty-co
+ mmon-4.1.101.Final.jar libs/jakarta.inject-api-2.0.1.jar
+Main-Class: com.opnova.Application
+

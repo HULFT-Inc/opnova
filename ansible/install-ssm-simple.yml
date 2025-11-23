@@ -1,0 +1,15 @@
+---
+- name: Install SSM Agent
+  hosts: sales-agent01
+  gather_facts: no
+  tasks:
+    - name: Install SSM Agent via PowerShell
+      win_shell: |
+        Invoke-WebRequest -Uri "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "AmazonSSMAgentSetup.exe"
+        Start-Process -FilePath "AmazonSSMAgentSetup.exe" -ArgumentList "/S" -Wait
+        Start-Service AmazonSSMAgent
+      register: ssm_install
+
+    - name: Show result
+      debug:
+        var: ssm_install

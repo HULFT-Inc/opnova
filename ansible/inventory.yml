@@ -1,0 +1,31 @@
+all:
+  children:
+    windows:
+      hosts:
+        dev-agent01:
+          ansible_host: 13.58.30.31
+          ansible_user: Administrator
+          ansible_connection: winrm
+          ansible_winrm_transport: ntlm
+          ansible_winrm_server_cert_validation: ignore
+          ansible_winrm_port: 5985
+          ansible_winrm_scheme: http
+          ansible_password: "{{ dev_agent01_password }}"
+        dev-agent02:
+          ansible_host: 3.14.230.52
+          ansible_user: Administrator
+          ansible_connection: winrm
+          ansible_winrm_transport: ntlm
+          ansible_winrm_server_cert_validation: ignore
+          ansible_winrm_port: 5985
+          ansible_winrm_scheme: http
+          ansible_password: "{{ dev_agent02_password }}"
+        sales-agent01:
+          ansible_host: 3.19.80.124
+          ansible_user: Administrator
+          ansible_connection: winrm
+          ansible_winrm_transport: ntlm
+          ansible_winrm_server_cert_validation: ignore
+          ansible_winrm_port: 5985
+          ansible_winrm_scheme: http
+          ansible_password: "{{ sales_password }}"
