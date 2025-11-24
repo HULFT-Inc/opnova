@@ -1,0 +1,17 @@
+---
+- name: Test Windows connectivity
+  hosts: sales-agent01
+  gather_facts: no
+  vars:
+    ansible_password: "vaRgzhZ5pbl5-4!7VjJCtuIM4)FRIpjj"
+  tasks:
+    - name: Test connection
+      win_ping:
+      
+    - name: Get hostname
+      win_shell: hostname
+      register: hostname_result
+      
+    - name: Show hostname
+      debug:
+        var: hostname_result.stdout

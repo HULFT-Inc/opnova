@@ -1,0 +1,13 @@
+all:
+  children:
+    windows:
+      hosts:
+        sales-agent01:
+          ansible_host: 3.19.80.124
+          ansible_user: Administrator
+          ansible_password: "vaRgzhZ5pbl5-4!7VjJCtuIM4)FRIpjj"
+          ansible_connection: winrm
+          ansible_winrm_transport: ntlm
+          ansible_winrm_server_cert_validation: ignore
+          ansible_winrm_port: 5985
+          ansible_winrm_scheme: http

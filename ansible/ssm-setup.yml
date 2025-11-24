@@ -1,0 +1,32 @@
+---
+- name: Setup Windows instances via SSM
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Install basic software on all instances
+      shell: |
+        aws ssm send-command \
+          --instance-ids i-044baa0fced751b70 i-049a2559b8f6e8316 i-06a4b78156ce85ba3 \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString(\"https://community.chocolatey.org/install.ps1\"))"]' \
+          --profile opnova \
+          --region us-east-2
+      register: choco_install
+      
+    - name: Show command ID
+      debug:
+        msg: "Chocolatey install command: {{ (choco_install.stdout | from_json).Command.CommandId }}"
+        
+    - name: Install Git via Chocolatey
+      shell: |
+        aws ssm send-command \
+          --instance-ids i-044baa0fced751b70 i-049a2559b8f6e8316 i-06a4b78156ce85ba3 \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["choco install git -y"]' \
+          --profile opnova \
+          --region us-east-2
+      register: git_install
+      
+    - name: Show Git install command ID
+      debug:
+        msg: "Git install command: {{ (git_install.stdout | from_json).Command.CommandId }}"

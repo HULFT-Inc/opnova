@@ -1,0 +1,46 @@
+---
+- name: Complete Windows Setup via SSM
+  hosts: localhost
+  gather_facts: no
+  vars:
+    instance_ids:
+      - i-044baa0fced751b70  # Dev-Agent02
+      - i-049a2559b8f6e8316  # Dev-Agent01  
+      - i-06a4b78156ce85ba3  # Sales-Agent01
+  tasks:
+    - name: Install development tools
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["choco install notepadplusplus 7zip googlechrome firefox vscode -y"]' \
+          --profile opnova \
+          --region us-east-2
+      register: dev_tools
+      
+    - name: Install Java and Node.js
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["choco install openjdk nodejs -y"]' \
+          --profile opnova \
+          --region us-east-2
+      register: runtime_tools
+      
+    - name: Configure Windows features
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole -All"]' \
+          --profile opnova \
+          --region us-east-2
+      register: windows_features
+      
+    - name: Show all command IDs
+      debug:
+        msg: 
+          - "Dev tools: {{ (dev_tools.stdout | from_json).Command.CommandId }}"
+          - "Runtime tools: {{ (runtime_tools.stdout | from_json).Command.CommandId }}"
+          - "Windows features: {{ (windows_features.stdout | from_json).Command.CommandId }}"
