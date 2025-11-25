@@ -1,0 +1,46 @@
+---
+- name: Install OpNova on Windows instances via SSM
+  hosts: localhost
+  gather_facts: no
+  vars:
+    instance_ids:
+      - i-044baa0fced751b70  # Dev-Agent02
+      - i-049a2559b8f6e8316  # Dev-Agent01  
+      - i-06a4b78156ce85ba3  # Sales-Agent01
+  tasks:
+    - name: Copy OpNova MSI to all instances
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["if (!(Test-Path \"C:\\temp\")) { New-Item -ItemType Directory -Path \"C:\\temp\" }; Copy-Item \"C:\\Users\\Administrator\\Downloads\\Opnova-1.0.2-x64.msi\" -Destination \"C:\\temp\\Opnova-1.0.2-x64.msi\" -Force; Write-Host \"OpNova MSI copied to C:\\temp\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: copy_result
+      
+    - name: Install OpNova on all instances
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i\", \"C:\\temp\\Opnova-1.0.2-x64.msi\", \"/quiet\", \"/norestart\" -Wait; Write-Host \"OpNova installation completed\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: install_result
+      
+    - name: Verify OpNova installation
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -like \"*OpNova*\"} | Select-Object Name, Version, InstallDate"]' \
+          --profile opnova \
+          --region us-east-2
+      register: verify_result
+      
+    - name: Show command IDs
+      debug:
+        msg: 
+          - "Copy command: {{ (copy_result.stdout | from_json).Command.CommandId }}"
+          - "Install command: {{ (install_result.stdout | from_json).Command.CommandId }}"
+          - "Verify command: {{ (verify_result.stdout | from_json).Command.CommandId }}"

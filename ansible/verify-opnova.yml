@@ -1,0 +1,46 @@
+---
+- name: Verify OpNova Installation Status
+  hosts: localhost
+  gather_facts: no
+  vars:
+    instance_ids:
+      - i-044baa0fced751b70  # Dev-Agent02
+      - i-049a2559b8f6e8316  # Dev-Agent01  
+      - i-06a4b78156ce85ba3  # Sales-Agent01
+  tasks:
+    - name: Check OpNova installation via registry
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object {$_.DisplayName -like \"*OpNova*\"} | Select-Object DisplayName, DisplayVersion, InstallDate, Publisher"]' \
+          --profile opnova \
+          --region us-east-2
+      register: registry_check
+      
+    - name: Check OpNova services
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Get-Service | Where-Object {$_.Name -like \"*OpNova*\" -or $_.DisplayName -like \"*OpNova*\"} | Select-Object Name, Status, StartType"]' \
+          --profile opnova \
+          --region us-east-2
+      register: service_check
+      
+    - name: Check OpNova processes
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Get-Process | Where-Object {$_.ProcessName -like \"*OpNova*\"} | Select-Object ProcessName, Id, CPU, WorkingSet"]' \
+          --profile opnova \
+          --region us-east-2
+      register: process_check
+      
+    - name: Show verification command IDs
+      debug:
+        msg: 
+          - "Registry check: {{ (registry_check.stdout | from_json).Command.CommandId }}"
+          - "Service check: {{ (service_check.stdout | from_json).Command.CommandId }}"
+          - "Process check: {{ (process_check.stdout | from_json).Command.CommandId }}"

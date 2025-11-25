@@ -1,0 +1,45 @@
+---
+- name: Install OpNova on failed instances
+  hosts: localhost
+  gather_facts: no
+  vars:
+    failed_instances:
+      - i-049a2559b8f6e8316  # Dev-Agent01  
+      - i-06a4b78156ce85ba3  # Sales-Agent01
+  tasks:
+    - name: Check if MSI exists on failed instances
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ failed_instances | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Test-Path \"C:\\Users\\Administrator\\Downloads\\Opnova-1.0.2-x64.msi\"; Test-Path \"C:\\temp\\Opnova-1.0.2-x64.msi\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: msi_check
+      
+    - name: Copy MSI from Downloads to temp
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ failed_instances | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["if (!(Test-Path \"C:\\temp\")) { New-Item -ItemType Directory -Path \"C:\\temp\" }; Copy-Item \"C:\\Users\\Administrator\\Downloads\\Opnova-1.0.2-x64.msi\" -Destination \"C:\\temp\\Opnova-1.0.2-x64.msi\" -Force; Write-Host \"MSI copied successfully\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: copy_msi
+      
+    - name: Install OpNova with verbose logging
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ failed_instances | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i\", \"C:\\temp\\Opnova-1.0.2-x64.msi\", \"/quiet\", \"/norestart\", \"/l*v\", \"C:\\temp\\opnova-install.log\" -Wait; Write-Host \"Installation completed - check C:\\temp\\opnova-install.log for details\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: install_opnova
+      
+    - name: Show command IDs
+      debug:
+        msg: 
+          - "MSI check: {{ (msi_check.stdout | from_json).Command.CommandId }}"
+          - "Copy MSI: {{ (copy_msi.stdout | from_json).Command.CommandId }}"
+          - "Install: {{ (install_opnova.stdout | from_json).Command.CommandId }}"

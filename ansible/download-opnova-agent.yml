@@ -1,0 +1,49 @@
+---
+- name: Download OpNova Agent with Authentication
+  hosts: localhost
+  gather_facts: no
+  vars:
+    instance_ids:
+      - i-044baa0fced751b70  # Dev-Agent02
+      - i-049a2559b8f6e8316  # Dev-Agent01  
+      - i-06a4b78156ce85ba3  # Sales-Agent01
+    opnova_url: "https://get.opnova.io/agent/win/latest"
+  tasks:
+    - name: Prompt for credentials
+      pause:
+        prompt: "Enter username for get.opnova.io"
+      register: username_input
+      
+    - name: Prompt for password
+      pause:
+        prompt: "Enter password for get.opnova.io"
+        echo: no
+      register: password_input
+      
+    - name: Download OpNova agent with authentication
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["$username = \"{{ username_input.user_input }}\"; $password = \"{{ password_input.user_input }}\"; $securePassword = ConvertTo-SecureString $password -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword); Invoke-WebRequest -Uri \"{{ opnova_url }}\" -Credential $credential -OutFile \"C:\\temp\\opnova-agent.exe\""]' \
+          --profile opnova \
+          --region us-east-2
+      register: download_result
+      
+    - name: Show download command ID
+      debug:
+        msg: "OpNova agent download command: {{ (download_result.stdout | from_json).Command.CommandId }}"
+        
+    - name: Install OpNova agent
+      shell: |
+        aws ssm send-command \
+          --instance-ids {{ instance_ids | join(' ') }} \
+          --document-name "AWS-RunPowerShellScript" \
+          --parameters 'commands=["Start-Process -FilePath \"C:\\temp\\opnova-agent.exe\" -ArgumentList \"/S\" -Wait"]' \
+          --profile opnova \
+          --region us-east-2
+      register: install_result
+      
+    - name: Show install command ID
+      debug:
+        msg: "OpNova agent install command: {{ (install_result.stdout | from_json).Command.CommandId }}"
